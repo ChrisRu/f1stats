@@ -1,29 +1,24 @@
-module Database
+module api.Database
+    open System.Threading.Tasks
     open System
-    open System.Dynamic
     open System.Collections.Generic
     open Dapper
-    open MySql.Data
+    open MySql.Data.MySqlClient
 
-    let dapperQuery<'Result> (query : string) (connection : MySqlClient.MySqlConnection) =
-        connection.QueryAsync<'Result>(query)
+    let private dapperMapParametrizedQuery<'T> (connection: MySqlConnection) sql (parameters : IDictionary<string, obj> option) : Task<IEnumerable<'T>> =
+        match parameters with
+        | Some(p) -> connection.QueryAsync<'T>(sql, p)
+        | None -> connection.QueryAsync<'T> sql
 
-    let dapperParametrizedQuery<'Result> (query : string) (param : obj) (connection : MySqlClient.MySqlConnection) =
-        connection.QueryAsync<'Result>(query, param)
 
-    let dapperMapParametrizedQuery<'Result> (query : string) (param : Map<string, _>) (connection : MySqlClient.MySqlConnection) =
-        let expando = ExpandoObject()
-        let expandoDictionary = expando :> IDictionary<string, obj>
-        for paramValue in param do
-            expandoDictionary.Add(paramValue.Key, paramValue.Value :> obj)
-
-        connection |> dapperParametrizedQuery query expando
-
-    let createConnection connectionString =
-        if String.IsNullOrEmpty(connectionString) then
+    let private createConnection connectionString =
+        if String.IsNullOrEmpty connectionString then
             failwith "No valid connection string variable was supplied"
 
-        let connection = new MySqlClient.MySqlConnection(connectionString)
+        new MySqlConnection(connectionString)
+
+    let query sql parameters =
+        use connection = Environment.GetEnvironmentVariable "CONNECTION_STRING" |> createConnection
         connection.Open()
 
-        connection
+        dapperMapParametrizedQuery connection sql parameters

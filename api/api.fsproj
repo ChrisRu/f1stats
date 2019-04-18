@@ -17,17 +17,16 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="Settings.fs" />
     <Compile Include="Database.fs" />
+    <Compile Include="Controllers\CircuitsController.fs" />
+    <Compile Include="DatabaseModels.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 
   <ItemGroup>
     <Content Include="schema.txt" />
     <None Include="web.config" CopyToOutputDirectory="PreserveNewest" />
-    <Content Include="WebRoot\**\*">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
   </ItemGroup>
-
 
 </Project>
